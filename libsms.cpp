@@ -20,9 +20,8 @@ void printf(const char* msg, ...) {}
 
 GearsystemCore sms_;
 bool has_init_ = false;
-const int DISPLAY_WIDTH = 160;
-const int DISPLAY_HEIGHT = 144;
-uint32_t fbuffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
+uint32_t fbuffer[VIDEO_WIDTH * VIDEO_HEIGHT];
+int16_t abuffer[SAMPLE_RATE];  // buffer at most 1sec audio
 
 void (*corelib_puts)(const char* msg);
 
@@ -77,7 +76,7 @@ EXPOSE
 const uint8_t *framebuffer() {
 #ifdef ISWASM
     // ensure all pixels have 255 alpha
-    for (int i = 0; i < DISPLAY_WIDTH * DISPLAY_HEIGHT; i++) {
+    for (int i = 0; i < VIDEO_WIDTH * VIDEO_HEIGHT; i++) {
         fbuffer[i] |= 0xff000000;
     }
 #endif
@@ -103,6 +102,8 @@ long apu_sample_variable(int16_t* output, int32_t samples) {
 EXPOSE
 void frame() {
     REQUIRE_CORE();
+    int samples = 10;
+    sms_.RunToVBlank((uint8_t*)&fbuffer, abuffer, &samples);
 }
 
 #ifndef __wasm32__

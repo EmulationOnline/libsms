@@ -18,8 +18,8 @@ enum Keys {
     NUM_KEYS
 };
 
-#define VIDEO_WIDTH 240
-#define VIDEO_HEIGHT 160
+#define VIDEO_WIDTH 320  // Both include overscan padding
+#define VIDEO_HEIGHT 288
 
 #define UNMANGLE extern "C"
 #define EXPOSE extern "C" __attribute__((visibility("default")))
