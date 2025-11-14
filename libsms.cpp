@@ -47,7 +47,25 @@ void zero() {
 }
 
 EXPOSE
-void set_key(size_t key, char val) {}
+void set_key(size_t key, char val) {
+    GS_Keys gsk;
+    switch(key) {
+        case BTN_A: gsk = Key_2; break;
+        case BTN_B: gsk = Key_1; break;
+        case BTN_Up: gsk = Key_Up; break;
+        case BTN_Down: gsk = Key_Down; break;
+        case BTN_Left: gsk = Key_Left; break;
+        case BTN_Right: gsk = Key_Right; break;
+        default: return;
+    }
+
+    constexpr GS_Joypads joypad = Joypad_1;
+    if (val) {
+        sms_.KeyPressed(joypad, gsk);
+    } else {
+        sms_.KeyReleased(joypad, gsk);
+    }
+}
 
 uint8_t rom_buffer_[10*1024*1024];
 // frontend needs a wasm buffer into which it can copy the rom.

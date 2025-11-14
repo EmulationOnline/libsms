@@ -7,14 +7,12 @@
 enum Keys {
     BTN_A = 0,
     BTN_B,
-    BTN_Sel,
-    BTN_Start,
+    BTN_unused1,
+    BTN_unused2,
     BTN_Up,
     BTN_Down,
     BTN_Left,
     BTN_Right,
-    BTN_L,  // Shoulder buttons
-    BTN_R,
     NUM_KEYS
 };
 
