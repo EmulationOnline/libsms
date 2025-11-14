@@ -24,9 +24,20 @@ const int DISPLAY_WIDTH = 160;
 const int DISPLAY_HEIGHT = 144;
 uint32_t fbuffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
+void (*corelib_puts)(const char* msg);
+
+EXPOSE
+void corelib_set_puts(void(*cb)(const char*)) {
+    corelib_puts = cb;
+    corelib_puts("corelib_puts initialized");
+}
+#ifndef ISWASM
+#define puts(msg) corelib_puts(msg);
+#endif
+
 void log(const char* msg) {
 #ifdef DBG
-    printf("%s\n", msg);
+    puts(msg);
 #endif
 }
 

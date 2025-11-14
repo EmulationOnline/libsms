@@ -14,10 +14,10 @@ ci: deps libsms.so
 
 EMBEDFLAGS=-O3 -fvisibility=hidden -static-libstdc++ -fPIC
 # CFLAGS=-fvisibility=hidden -ffreestanding -nostdlib -fPIC -O3 -Wfatal-errors -Werror
-SRCS := $(wildcard Gearsystem/src/**/*.cpp Gearsystem/src/*.cpp Gearsystem/platforms/libretro/*.cpp)
-GBFLAGS=-Wfatal-errors -Werror -Wno-narrowing -D__LIBRETRO__ -I Gearsystem/src -I Gearsystem/src/audio -I Gearsystem/src/miniz/ -I Gearsystem/platforms/libretro -Wno-div-by-zero
+SRCS := $(wildcard Gearsystem/src/**/*.cpp Gearsystem/src/*.cpp Gearsystem/platforms/libretro/*.cpp Gearsystem/src/audio/emu2413/*.c Gearsystem/src/miniz/*.c)
+SMSFLAGS=-Wfatal-errors -Werror -Wno-narrowing -D__LIBRETRO__ -I Gearsystem/src -I Gearsystem/src/audio -I Gearsystem/src/miniz/ -I Gearsystem/platforms/libretro -I Gearsystem/src/audio/emu2413 -Wno-div-by-zero
 libsms.so: libsms.cpp corelib.h
-	$(CXX) $(CFLAGS) $(EMBEDFLAGS) $(GBFLAGS) -shared -o libsms.so libsms.cpp $(SRCS)
+	$(CXX) $(CFLAGS) $(EMBEDFLAGS) $(SMSFLAGS) -shared -o libsms.so libsms.cpp $(SRCS)
 	cp libsms.so libapu.so
 	echo "libsms done"
 
@@ -36,7 +36,7 @@ runc:
 	LD_LIBRARY_PATH=$(shell pwd) ./main "$(ROM)" c
 
 repl:
-	ls libsms.cpp Makefile | entr -c make libsms.so
+	ls libsms.cpp Makefile | entr -c make all
 wrepl:
 	ls libsms.cpp Makefile | entr -c make libsms.js
 	
@@ -47,4 +47,4 @@ WASMFLAGS=-Wl,--no-entry -Wl,--export-all -s EXPORTED_FUNCTIONS=$(EXPORTS) -s EX
 
 .PHONY: libsms.js
 libsms.js:
-	 $(EMCC) $(CFLAGS) $(GBFLAGS) $(WASMFLAGS) -o libsms.js libsms.cpp $(SRCS) 
+	 $(EMCC) $(CFLAGS) $(SMSFLAGS) $(WASMFLAGS) -o libsms.js libsms.cpp $(SRCS) 
