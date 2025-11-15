@@ -1,4 +1,5 @@
 #include "corelib.h"
+#include "ring.hpp"
 #include "Gearsystem/src/GearsystemCore.h"
 
 #include <stdlib.h>
@@ -23,6 +24,7 @@ bool has_init_ = false;
 uint32_t megabuffer[OVER_WIDTH * OVER_HEIGHT];  // core needs to dump w/ overscan somewhere
 uint32_t fbuffer[VIDEO_WIDTH * VIDEO_HEIGHT];   // non-overscan buffer.
 int16_t abuffer[SAMPLE_RATE];  // buffer at most 1sec audio
+Ring<int16_t, SAMPLE_RATE> ring_;
 
 void (*corelib_puts)(const char* msg);
 
@@ -112,21 +114,28 @@ size_t min(size_t a, size_t b) {
     return a < b ? a : b;
 }
 
+int16_t last_sample_ = 0;
 EXPOSE
 long apu_sample_variable(int16_t* output, int32_t samples) {
     REQUIRE_CORE(0);
-    return 0;
+    size_t read = ring_.pull(output, samples);
+    if (read > 0) {
+        last_sample_ = output[read - 1];
+    }
+    for (int i = read; read < samples; read++) {
+        output[i] = last_sample_;
+    }
+    return read;
 }
 
 EXPOSE
 void frame() {
     REQUIRE_CORE();
     int samples = 10;
-    puts("runtovblank");
     sms_.RunToVBlank((uint8_t*)&megabuffer, abuffer, &samples);
     auto *video = sms_.GetVideo();
-    puts("render32");
     video->Render32bit(video->GetFrameBuffer(), (uint8_t*)fbuffer, GS_PIXEL_RGBA8888, VIDEO_WIDTH*VIDEO_HEIGHT, /*overscan*/false);
+    ring_.push(abuffer, samples);
 }
 
 #ifndef __wasm32__
