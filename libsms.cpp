@@ -20,7 +20,8 @@ void printf(const char* msg, ...) {}
 
 GearsystemCore sms_;
 bool has_init_ = false;
-uint32_t fbuffer[VIDEO_WIDTH * VIDEO_HEIGHT];
+uint32_t megabuffer[OVER_WIDTH * OVER_HEIGHT];  // core needs to dump w/ overscan somewhere
+uint32_t fbuffer[VIDEO_WIDTH * VIDEO_HEIGHT];   // non-overscan buffer.
 int16_t abuffer[SAMPLE_RATE];  // buffer at most 1sec audio
 
 void (*corelib_puts)(const char* msg);
@@ -121,7 +122,11 @@ EXPOSE
 void frame() {
     REQUIRE_CORE();
     int samples = 10;
-    sms_.RunToVBlank((uint8_t*)&fbuffer, abuffer, &samples);
+    puts("runtovblank");
+    sms_.RunToVBlank((uint8_t*)&megabuffer, abuffer, &samples);
+    auto *video = sms_.GetVideo();
+    puts("render32");
+    video->Render32bit(video->GetFrameBuffer(), (uint8_t*)fbuffer, GS_PIXEL_RGBA8888, VIDEO_WIDTH*VIDEO_HEIGHT, /*overscan*/false);
 }
 
 #ifndef __wasm32__

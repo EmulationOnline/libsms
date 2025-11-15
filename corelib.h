@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-
+#include "Gearsystem/src/definitions.h"
 
 enum Keys {
     BTN_A = 0,
@@ -16,8 +16,10 @@ enum Keys {
     NUM_KEYS
 };
 
-#define VIDEO_WIDTH 320  // Both include overscan padding
-#define VIDEO_HEIGHT 288
+#define VIDEO_WIDTH GS_RESOLUTION_MAX_WIDTH
+#define VIDEO_HEIGHT GS_RESOLUTION_MAX_HEIGHT
+#define OVER_WIDTH GS_RESOLUTION_MAX_WIDTH_WITH_OVERSCAN
+#define OVER_HEIGHT GS_RESOLUTION_MAX_HEIGHT_WITH_OVERSCAN
 
 #define UNMANGLE extern "C"
 #define EXPOSE extern "C" __attribute__((visibility("default")))
