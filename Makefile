@@ -14,7 +14,7 @@ ci: deps libsms.so
 
 EMBEDFLAGS=-O3 -fvisibility=hidden -static-libstdc++ -fPIC
 # CFLAGS=-fvisibility=hidden -ffreestanding -nostdlib -fPIC -O3 -Wfatal-errors -Werror
-SRCS := $(wildcard Gearsystem/src/**/*.cpp Gearsystem/src/*.cpp Gearsystem/platforms/libretro/*.cpp Gearsystem/src/audio/emu2413/*.c Gearsystem/src/miniz/*.c)
+SRCS := $(wildcard Gearsystem/src/**/*.cpp Gearsystem/src/*.cpp Gearsystem/platforms/libretro/*.cpp) -x c++ Gearsystem/src/audio/emu2413/*.c -x c++ Gearsystem/src/miniz/*.c
 SMSFLAGS=-std=c++14 -Wfatal-errors -Werror -Wno-narrowing -D__LIBRETRO__ -I Gearsystem/src -I Gearsystem/src/audio -I Gearsystem/src/miniz/ -I Gearsystem/platforms/libretro -I Gearsystem/src/audio/emu2413 -Wno-div-by-zero
 libsms.so: libsms.cpp corelib.h
 	$(CXX) $(CFLAGS) $(EMBEDFLAGS) $(SMSFLAGS) -shared -o libsms.so libsms.cpp $(SRCS)
