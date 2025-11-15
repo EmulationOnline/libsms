@@ -13,14 +13,10 @@ void emu_puts(const char* msg) {
 void sdl_update_keys(const uint8_t *sdlkeys) {
     set_key(BTN_A, sdlkeys[SDL_SCANCODE_X]);      // A
     set_key(BTN_B, sdlkeys[SDL_SCANCODE_Z]);      // B
-    set_key(BTN_Sel, sdlkeys[SDL_SCANCODE_TAB]);    // Select
-    set_key(BTN_Start, sdlkeys[SDL_SCANCODE_RETURN]); // Start
     set_key(BTN_Up, sdlkeys[SDL_SCANCODE_UP]);     // Dpad Up
     set_key(BTN_Down, sdlkeys[SDL_SCANCODE_DOWN]);   // Dpad Down
     set_key(BTN_Left, sdlkeys[SDL_SCANCODE_LEFT]);   // Dpad Left
     set_key(BTN_Right, sdlkeys[SDL_SCANCODE_RIGHT]);   // Dpad Right
-    set_key(BTN_L, sdlkeys[SDL_SCANCODE_A]);  // left shoulder
-    set_key(BTN_R, sdlkeys[SDL_SCANCODE_S]);  // right shoulder
 }
 
 char run = 1;

@@ -127,24 +127,26 @@ void frame() {
 #ifndef __wasm32__
 // save&load unsupported for wasm
 
+constexpr size_t MAX_STATE_SIZE = 100'000'000; // 100M
 EXPOSE
 void save(int fd) {
     REQUIRE_CORE();
-    // size_t state_size = gameboy_->stateSize();
-    // printf("save state is %zu bytes\n", state_size);
-    // uint8_t *buffer = (uint8_t*)malloc(state_size);
-    // uint8_t* const orig_buffer = buffer;
-    // gameboy_->saveState(buffer);
-    // while (state_size > 0) {
-    //     ssize_t written = write(fd, buffer, state_size);
-    //     if (written <= 0) {
-    //         perror("Save failed: ");
-    //         return;
-    //     }
-    //     state_size -= written;
-    //     buffer += written;
-    // }
-    // free(orig_buffer);
+    // Total size is unknown, make a conservative allocation.
+    uint8_t *buffer = (uint8_t*)malloc(MAX_STATE_SIZE);
+    uint8_t* const orig_buffer = buffer;
+    size_t bytes = 0;
+    sms_.SaveState(buffer, bytes);
+    printf("Wrote %zu bytes\n", bytes);
+    while (bytes > 0) {
+        ssize_t written = write(fd, buffer, bytes);
+        if (written <= 0) {
+            perror("Save failed: ");
+            return;
+        }
+        bytes -= written;
+        buffer += written;
+    }
+    free(orig_buffer);
 }
 
 
@@ -164,43 +166,39 @@ void dump_state(const char* filename) {
 EXPOSE
 void load(int fd) {
     REQUIRE_CORE();
-//    ssize_t bytes = lseek(fd, 0, SEEK_END);
-//    if (bytes <= 0) {
-//        perror("Failed to seek while loading: ");
-//        return;
-//    }
-//    printf("Loading %zu bytes\n", bytes);
-//    size_t state_size = gameboy_->stateSize();
-//    if (bytes != state_size) {
-//        puts("Invalid state size");
-//        return;
-//    }
-//    lseek(fd, 0, SEEK_SET);
-//    uint8_t *buffer = (uint8_t*)malloc(bytes);
-//    uint8_t *write = buffer;
-//    while (bytes > 0) {
-//        ssize_t read_bytes = read(fd, write, bytes);
-//        if (read_bytes <= 0) {
-//            perror("Read failure during load: ");
-//            return;
-//        }
-//        printf("read returned %zu bytes\n", read_bytes);
-//        write += read_bytes;
-//        bytes -= read_bytes;
-//    }
-//    gameboy_->loadState(buffer);
-//    free(buffer);
+    ssize_t bytes = lseek(fd, 0, SEEK_END);
+    if (bytes <= 0) {
+        perror("Failed to seek while loading: ");
+        return;
+    }
+    const size_t state_size = bytes;
+    printf("Loading %zu bytes\n", bytes);
+    lseek(fd, 0, SEEK_SET);
+    uint8_t *buffer = (uint8_t*)malloc(bytes);
+    uint8_t *write = buffer;
+    while (bytes > 0) {
+        ssize_t read_bytes = read(fd, write, bytes);
+        if (read_bytes <= 0) {
+            perror("Read failure during load: ");
+            return;
+        }
+        printf("read returned %zu bytes\n", read_bytes);
+        write += read_bytes;
+        bytes -= read_bytes;
+    }
+    sms_.LoadState(buffer, state_size);
+    free(buffer);
 }
 
 EXPOSE
 void load_state(const char* filename) {
     REQUIRE_CORE();
-//    int fd = open(filename,  O_RDONLY , 0700);
-//    if (fd == -1) {
-//        perror("Failed to open: ");
-//        return;
-//    }
-//    load(fd);
+    int fd = open(filename,  O_RDONLY , 0700);
+    if (fd == -1) {
+        perror("Failed to open: ");
+        return;
+    }
+    load(fd);
 }
 
 #endif // ifndef __wasm32__

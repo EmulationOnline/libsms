@@ -15,11 +15,14 @@ ci: deps libsms.so
 EMBEDFLAGS=-O3 -fvisibility=hidden -static-libstdc++ -fPIC
 # CFLAGS=-fvisibility=hidden -ffreestanding -nostdlib -fPIC -O3 -Wfatal-errors -Werror
 SRCS := $(wildcard Gearsystem/src/**/*.cpp Gearsystem/src/*.cpp Gearsystem/platforms/libretro/*.cpp Gearsystem/src/audio/emu2413/*.c Gearsystem/src/miniz/*.c)
-SMSFLAGS=-Wfatal-errors -Werror -Wno-narrowing -D__LIBRETRO__ -I Gearsystem/src -I Gearsystem/src/audio -I Gearsystem/src/miniz/ -I Gearsystem/platforms/libretro -I Gearsystem/src/audio/emu2413 -Wno-div-by-zero
+SMSFLAGS=-std=c++14 -Wfatal-errors -Werror -Wno-narrowing -D__LIBRETRO__ -I Gearsystem/src -I Gearsystem/src/audio -I Gearsystem/src/miniz/ -I Gearsystem/platforms/libretro -I Gearsystem/src/audio/emu2413 -Wno-div-by-zero
 libsms.so: libsms.cpp corelib.h
 	$(CXX) $(CFLAGS) $(EMBEDFLAGS) $(SMSFLAGS) -shared -o libsms.so libsms.cpp $(SRCS)
 	cp libsms.so libapu.so
 	echo "libsms done"
+
+fast.o: libsms.cpp
+	$(CXX) $(CFLAGS) $(SMSFLAGS) -O2 -o fast.o libsms.cpp
 
 main: main.c corelib.h
 	$(CXX) -O3 -o main main.c -L. -l:libsms.so -lSDL2 -lc -lm ${WARN}
@@ -35,6 +38,8 @@ run:
 runc:
 	LD_LIBRARY_PATH=$(shell pwd) ./main "$(ROM)" c
 
+frepl: # fast
+	ls libsms.cpp Makefile | entr -c make fast.o
 repl:
 	ls libsms.cpp Makefile | entr -c make all
 wrepl:
