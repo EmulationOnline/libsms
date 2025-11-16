@@ -122,6 +122,9 @@ long apu_sample_variable(int16_t* output, int32_t samples) {
     if (read > 0) {
         last_sample_ = output[read - 1];
     }
+    // if (read < samples) {
+    //     printf("underflow: want=%u, had=%zu\n", samples, read);
+    // }
     for (int i = read; read < samples; read++) {
         output[i] = last_sample_;
     }
@@ -131,11 +134,18 @@ long apu_sample_variable(int16_t* output, int32_t samples) {
 EXPOSE
 void frame() {
     REQUIRE_CORE();
-    int samples = 10;
+    int samples = 0;
     sms_.RunToVBlank((uint8_t*)&megabuffer, abuffer, &samples);
+    // Core produces stereo, convert to mono
+    for (int i = 0; i < samples/2; i++) {
+        abuffer[i] = abuffer[2*i];
+    }
+    int pushed = ring_.push(abuffer, samples/2);
+    if (pushed != samples) {
+        printf("ring overflow: %d / %d pushed\n", pushed, samples);
+    }
     auto *video = sms_.GetVideo();
     video->Render32bit(video->GetFrameBuffer(), (uint8_t*)fbuffer, GS_PIXEL_RGBA8888, VIDEO_WIDTH*VIDEO_HEIGHT, /*overscan*/false);
-    ring_.push(abuffer, samples);
 }
 
 #ifndef __wasm32__
