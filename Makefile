@@ -29,7 +29,7 @@ main: main.c corelib.h
 	echo "main done"
 
 clean:
-	rm -f libsms.so
+	rm -f libsms.so libsms.js libsms.wasm
 
 gdb:
 	LD_LIBRARY_PATH=$(shell pwd) gdb --args ./main "$(ROM)"

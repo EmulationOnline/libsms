@@ -118,17 +118,17 @@ int16_t last_sample_ = 0;
 EXPOSE
 long apu_sample_variable(int16_t* output, int32_t samples) {
     REQUIRE_CORE(0);
-    size_t read = ring_.pull(output, samples);
-    if (read > 0) {
-        last_sample_ = output[read - 1];
+    long count = ring_.pull(output, samples);
+    if (count > 0) {
+        last_sample_ = output[count - 1];
     }
     // if (read < samples) {
     //     printf("underflow: want=%u, had=%zu\n", samples, read);
     // }
-    for (int i = read; read < samples; read++) {
+    for (int i = count; count < samples; count++) {
         output[i] = last_sample_;
     }
-    return read;
+    return count;
 }
 
 EXPOSE
@@ -136,12 +136,13 @@ void frame() {
     REQUIRE_CORE();
     int samples = 0;
     sms_.RunToVBlank((uint8_t*)&megabuffer, abuffer, &samples);
+    samples /= 2;
     // Core produces stereo, convert to mono
-    for (int i = 0; i < samples/2; i++) {
+    for (int i = 0; i < samples; i++) {
         abuffer[i] = abuffer[2*i];
     }
-    int pushed = ring_.push(abuffer, samples/2);
-    if (pushed != samples) {
+    int pushed = ring_.push(abuffer, samples);
+    if (pushed < samples) {
         printf("ring overflow: %d / %d pushed\n", pushed, samples);
     }
     auto *video = sms_.GetVideo();
