@@ -181,6 +181,7 @@ EXPOSE
 __attribute__((visibility("default")))
 void load_str(int len, const uint8_t *src) {
     REQUIRE_CORE();
+    sms_.LoadState(src, len);
 }
 
 #ifndef __wasm32__
@@ -243,7 +244,7 @@ void load(int fd) {
         write += read_bytes;
         bytes -= read_bytes;
     }
-    sms_.LoadState(buffer, state_size);
+    load_str(state_size, buffer);
     free(buffer);
 }
 
