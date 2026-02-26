@@ -23,7 +23,8 @@ void printf(const char* msg, ...) {}
 GearsystemCore sms_;
 bool has_init_ = false;
 uint32_t megabuffer[OVER_WIDTH * OVER_HEIGHT];  // core needs to dump w/ overscan somewhere
-uint32_t fbuffer[VIDEO_WIDTH * VIDEO_HEIGHT];   // non-overscan buffer.
+uint32_t bbuffer[VIDEO_WIDTH * VIDEO_HEIGHT];   // backbuffer, written into during frame()
+uint32_t fbuffer[VIDEO_WIDTH * VIDEO_HEIGHT];   // output buffer written to after Fixup.
 int16_t abuffer[SAMPLE_RATE];  // buffer at most 1sec audio
 Ring<int16_t, SAMPLE_RATE> ring_;
 
@@ -178,6 +179,24 @@ long apu_sample_variable(int16_t* output, int32_t samples) {
     return count;
 }
 
+void FixupFramebuffer() {
+    // copy rows from bbuffer into fbuffer with the row stride equal to VIDEO_WIDTH, independent of video_width.
+    // Render32bit puts the 2nd row immediately after the second, so the old picture-in-picture model of video resizing
+    // doesn't work without this fixup.
+    REQUIRE_CORE();
+    auto *cart = sms_.GetCartridge();
+
+    uint32_t w = width();
+    uint32_t *dst = fbuffer;
+    uint32_t *src = bbuffer;
+    for (int y = 0; y < GG_HEIGHT; y++) {
+        memcpy(dst, src, VIDEO_WIDTH * sizeof (uint32_t));
+        src += w;
+        dst += VIDEO_WIDTH;
+    }
+
+}
+
 EXPOSE
 void frame() {
     REQUIRE_CORE();
@@ -193,8 +212,10 @@ void frame() {
         printf("ring overflow: %d / %d pushed\n", pushed, samples);
     }
     auto *video = sms_.GetVideo();
-    video->Render32bit(video->GetFrameBuffer(), (uint8_t*)fbuffer, GS_PIXEL_RGBA8888, VIDEO_WIDTH*VIDEO_HEIGHT, /*overscan*/false);
+    video->Render32bit(video->GetFrameBuffer(), (uint8_t*)bbuffer, GS_PIXEL_RGBA8888, VIDEO_WIDTH*VIDEO_HEIGHT, /*overscan*/false);
+    FixupFramebuffer();
 }
+
 
 
 EXPOSE
