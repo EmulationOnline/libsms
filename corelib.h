@@ -31,6 +31,11 @@ UNMANGLE void set_key(size_t key, char val);
 UNMANGLE void init(const uint8_t* data, size_t len);
 UNMANGLE const uint8_t *framebuffer();
 UNMANGLE void frame();
+// dynamic video
+UNMANGLE int framerate();
+UNMANGLE int width();
+UNMANGLE int height();
+
 UNMANGLE void dump_state(const char* save_path);
 UNMANGLE void load_state(const char* save_path);
 // Interface used by app. App closes fd.

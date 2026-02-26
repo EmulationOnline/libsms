@@ -30,6 +30,52 @@ Ring<int16_t, SAMPLE_RATE> ring_;
 void (*corelib_puts)(const char* msg);
 
 EXPOSE
+int framerate() {
+    REQUIRE_CORE(60);
+    auto *cart = sms_.GetCartridge();
+    if (cart->IsGameGear()) {
+        return 60;
+    } else if (cart->IsPAL()) {
+        return 50;
+    } else {
+        return 60;
+    }
+}
+
+// SMS
+const uint32_t NTSC_WIDTH = 256;
+const uint32_t NTSC_HEIGHT = 192;
+const uint32_t PAL_WIDTH = 256;
+const uint32_t PAL_HEIGHT = 224;
+// GG
+const uint32_t GG_WIDTH = 160;
+const uint32_t GG_HEIGHT = 144;
+EXPOSE
+int width() {
+    auto *cart = sms_.GetCartridge();
+    // Note: carts can use IsGameGearInSMSMode(), but we dont support yet.
+    if (cart->IsGameGear() && !cart->IsGameGearInSMSMode()) {
+        return GG_WIDTH;
+    } else if (cart->IsPAL()) {
+        return PAL_WIDTH;
+    } else {
+        return NTSC_WIDTH;
+    }
+}
+
+EXPOSE
+int height() {
+    auto *cart = sms_.GetCartridge();
+    if (cart->IsGameGear() && !cart->IsGameGearInSMSMode()) {
+        return GG_HEIGHT;
+    } else if (cart->IsPAL()) {
+        return PAL_HEIGHT;
+    } else {
+        return NTSC_HEIGHT;
+    }
+}
+
+EXPOSE
 void corelib_set_puts(void(*cb)(const char*)) {
     corelib_puts = cb;
     corelib_puts("corelib_puts initialized");

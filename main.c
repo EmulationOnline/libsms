@@ -125,8 +125,10 @@ int main(int argc, char **argv) {
   }
 
   SDL_Init(SDL_INIT_VIDEO);
+  SDL_Window *window =
+      SDL_CreateWindow("pico master", 0, 0, VIDEO_WIDTH*SCALE, VIDEO_HEIGHT*SCALE, SDL_WINDOW_SHOWN);
   SDL_Renderer *renderer = SDL_CreateRenderer(
-      SDL_CreateWindow("pico master", 0, 0, VIDEO_WIDTH*SCALE, VIDEO_HEIGHT*SCALE, SDL_WINDOW_SHOWN), -1,
+      window, -1,
       SDL_RENDERER_ACCELERATED);
   SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
   // SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565,
@@ -135,14 +137,34 @@ int main(int argc, char **argv) {
   soundcard_init(&soundcard);
   // soundcard_test();
 
+  int w=0,h=0;
+  SDL_Rect srcRect = {
+      .x = 0,
+      .y = 0,
+      .w = 0,
+      .h = 0,
+  };
+  char title[50];
   clock_t last = clock();
   clock_t start = clock();
   static_assert(CLOCKS_PER_SEC == 1000*1000, "Bad clock assumptions");
   while(run) {
       input();
       frame();
+      int wp = width();
+      int hp = height();
+      if (wp != w || hp != h) {
+          w = wp;
+          h = hp;
+          snprintf(title, sizeof(title), "picomaster - %d x %d", w, h);
+          SDL_SetWindowTitle(window, title);
+          SDL_SetWindowSize(window, w*SCALE, h*SCALE);
+          srcRect.w = w;
+          srcRect.h = h;
+          printf("%d x %d\n", w, h);
+      }
       SDL_UpdateTexture(texture, 0, framebuffer(), VIDEO_WIDTH*BYTES_PER_PIXEL);
-      SDL_RenderCopy(renderer, texture, 0, 0);
+      SDL_RenderCopy(renderer, texture, &srcRect, 0);
       SDL_RenderPresent(renderer);
       // soundcard_queue(&soundcard, audio_buffer, audio_bytes);
       // SDL_UpdateTexture(texture, 0, finished_frame + 2048, 512);
