@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
           srcRect.h = h;
           printf("%d x %d\n", w, h);
       }
-      SDL_UpdateTexture(texture, 0, framebuffer(), width()*BYTES_PER_PIXEL);
+      SDL_UpdateTexture(texture, 0, framebuffer(), VIDEO_WIDTH*BYTES_PER_PIXEL);
       SDL_RenderCopy(renderer, texture, &srcRect, 0);
       SDL_RenderPresent(renderer);
       // soundcard_queue(&soundcard, audio_buffer, audio_bytes);
