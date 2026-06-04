@@ -189,7 +189,8 @@ void FixupFramebuffer() {
     uint32_t w = width();
     uint32_t *dst = fbuffer;
     uint32_t *src = bbuffer;
-    for (int y = 0; y < GG_HEIGHT; y++) {
+    const int h = height();
+    for (int y = 0; y < h; y++) {
         memcpy(dst, src, VIDEO_WIDTH * sizeof (uint32_t));
         src += w;
         dst += VIDEO_WIDTH;
